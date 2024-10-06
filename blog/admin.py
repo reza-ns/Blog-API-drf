@@ -10,7 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
 class ArticleAdmin(admin.ModelAdmin):
     list_display = ('title', 'status', 'get_category', 'create_date', 'get_tag', 'user')
     prepopulated_fields = {'slug': ('title',)}
-    readonly_fields = ('user',)
+    # readonly_fields = ('user',)
 
     def get_category(self, obj):
         categories = [category.name for category in obj.category.all()]

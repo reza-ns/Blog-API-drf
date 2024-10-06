@@ -1,18 +1,22 @@
 from rest_framework import generics
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import AllowAny
 from blog import models
 from . import serializers
+from .permissions import IsAuthorOrReadOnly
 
 
-class ArticleListView(generics.ListAPIView):
+class ArticleViewSet(ModelViewSet):
     queryset = models.Article.objects.all()
     serializer_class = serializers.ArticleSerializer
-
-
-class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = models.Article.objects.all()
-    serializer_class = serializers.ArticleSerializer
-    lookup_url_kwarg = 'article_slug'
     lookup_field = 'slug'
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthorOrReadOnly]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
 
 class CategoryView(generics.ListAPIView):
