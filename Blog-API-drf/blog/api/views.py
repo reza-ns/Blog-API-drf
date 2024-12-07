@@ -1,9 +1,14 @@
 from rest_framework import generics
-from rest_framework.decorators import permission_classes
 from rest_framework import viewsets
+from django.utils.text import slugify
 from blog import models
 from . import serializers
 from . import permissions
+
+
+def make_slug(data):
+    title = data.get('title')
+    return slugify(title, allow_unicode=True)
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
@@ -20,14 +25,19 @@ class ArticleViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
-            return serializers.ArticleListRetrieveSerializer
+        if self.action == 'list':
+            return serializers.ArticleListSerializer
+        elif self.action == 'retrieve':
+            return serializers.ArticleRetrieveSerializer
         else:
             return serializers.ArticleMakeUpdateSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, slug=make_slug(self.request.data))
+
 
 class CategoryView(generics.ListAPIView):
-    serializer_class = serializers.ArticleListRetrieveSerializer
+    serializer_class = serializers.ArticleListSerializer
     lookup_url_kwarg = 'category_slug'
     lookup_field = 'slug'
 
@@ -39,7 +49,7 @@ class CategoryView(generics.ListAPIView):
 
 
 class TagView(generics.ListAPIView):
-    serializer_class = serializers.ArticleListRetrieveSerializer
+    serializer_class = serializers.ArticleListSerializer
     lookup_url_kwarg = 'tag_slug'
     lookup_field = 'slug'
 
