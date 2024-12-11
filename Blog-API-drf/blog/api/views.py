@@ -1,6 +1,8 @@
 from rest_framework import generics
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from django.utils.text import slugify
+from django.shortcuts import get_object_or_404
 from blog import models
 from . import serializers
 from . import permissions
@@ -57,6 +59,17 @@ class TagView(generics.ListAPIView):
         tag = models.Tag.objects.get(slug=self.kwargs['tag_slug'])
         articles = tag.articles.filter(status=models.Article.STATUS_PUBLISH).order_by('-create_date')
         return articles
+
+
+class CommentView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.CommentSerializer
+    queryset = models.Comment.objects.all()
+
+    def perform_create(self, serializer):
+        article = get_object_or_404(models.Article, slug=self.kwargs['article_slug'])
+        serializer.save(user=self.request.user, article=article)
+
 
 
 
