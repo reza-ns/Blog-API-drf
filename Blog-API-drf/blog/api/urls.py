@@ -3,7 +3,7 @@ from rest_framework import routers
 from . import views
 
 
-app_name = 'api'
+app_name = 'blog-api'
 
 router = routers.SimpleRouter()
 router.register(r'articles', views.ArticleViewSet)

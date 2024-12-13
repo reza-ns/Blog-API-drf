@@ -1,6 +1,5 @@
 from rest_framework import permissions
 from django.contrib.auth import get_user_model
-from blog import models
 
 User = get_user_model()
 
