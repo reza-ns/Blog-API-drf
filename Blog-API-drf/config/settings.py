@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     # Local
     'accounts.apps.AccountsConfig',
     'blog.apps.BlogConfig',
+    'subscription.apps.SubscriptionConfig',
+    'payment.apps.PaymentConfig',
 ]
 
 MIDDLEWARE = [
