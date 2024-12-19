@@ -28,12 +28,11 @@ class PaymentView(APIView):
         else:
             payment.status = Payment.STATUS.FAILED
             payment.save()
-            return Response(
-                {'Sorry, payment gateway has problem, please try again later'}
-            )
+            return Response({'Payment failed'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 class PaymentVerify(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
         authority = request.GET.get('Authority')
         payment = get_object_or_404(Payment, authority=authority)
@@ -41,7 +40,7 @@ class PaymentVerify(APIView):
             is_paid, ref_id = zarinpal.zpal_payment_verify(
                                     merchant_id=settings.ZARINPAL['merchant_id'],
                                     authority=payment.authority,
-                                    amount=
+                                    amount=payment.amount
                                     )
             if is_paid:
                 payment.ref_id = ref_id
@@ -52,8 +51,8 @@ class PaymentVerify(APIView):
             else:
                 payment.status = Payment.STATUS.FAILED
                 payment.save()
-                return Response({'Payment failed'})
+                return Response({'Payment failed'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         elif request.GET.get('Status') == 'NOK':
             payment.status = Payment.STATUS.FAILED
             payment.save()
-            return Response({'Payment failed'})
+            return Response({'Payment failed'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
