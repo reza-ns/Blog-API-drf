@@ -9,6 +9,7 @@ urlpatterns = [
     path('blog/', include('blog.urls', namespace='blog')),
     path('user/', include('accounts.urls', namespace='accounts')),
     path('subs/', include('subscription.urls', namespace='subscription')),
+    path('pay/', include('payment.urls', namespace='payment')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

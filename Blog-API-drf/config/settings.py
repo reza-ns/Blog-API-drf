@@ -155,3 +155,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 2
 }
+
+
+# Payment gateways
+ZARINPAL = {
+    'request_url': 'https://www.zarinpal.com/pg/services/WebGate/wsdl',
+    'callback_url': 'http://127.0.0.1:8000/pay/verify',
+    'merchant_id': getenv('ZARINPAL_MID')
+}
