@@ -25,24 +25,13 @@ class Plan(models.Model):
         return self.name
 
 
-class Subscription(models.Model):
-    plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name='subscriptions')
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='subscriptions')
-    created_time = models.DateTimeField(auto_now_add=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    is_active = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.user} >> {self.plan.name}"
-
-
 class Purchase(models.Model):
     class Status(models.IntegerChoices):
         PAID = 10, 'Paid'
         NOT_PAID = -10, 'Not Paid'
 
-    subscription = models.ForeignKey(Subscription, on_delete=models.PROTECT, related_name='purchases')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='purchases')
+    plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name='purchases')
     payment = models.OneToOneField(Payment, on_delete=models.PROTECT, related_name='purchases')
     price = models.PositiveBigIntegerField()
     status = models.IntegerField(choices=Status.choices, default=Status.NOT_PAID)
@@ -50,6 +39,20 @@ class Purchase(models.Model):
     modified_time = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.subscription
+        return f"{self.id}"
+
+
+class Subscription(models.Model):
+    purchase = models.OneToOneField(Purchase, on_delete=models.PROTECT, related_name='subscriptions')
+    created_time = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.purchase}"
+
+
+
 
 

@@ -11,11 +11,12 @@ from . import serializers
 
 class PaymentView(APIView):
     permission_classes = (IsAuthenticated,)
-    def get(self, request, format=None):
-        payment = Payment.objects.create(user = request.user, amount =)
+
+    def get(self, request, format=None, *args, **kwargs):
+        payment = get_object_or_404(Payment, uid=self.kwargs.get('payment_uid'))
         payment_link, authority = zarinpal.zpal_payment_request(
                                     merchant_id=settings.ZARINPAL['merchant_id'],
-                                    amount=,
+                                    amount=payment.amount,
                                     description='buy subscription',
                                     user_email=request.user.email,
                                     user_phone=None,
@@ -33,6 +34,7 @@ class PaymentView(APIView):
 
 class PaymentVerify(APIView):
     permission_classes = (IsAuthenticated,)
+
     def get(self, request, format=None):
         authority = request.GET.get('Authority')
         payment = get_object_or_404(Payment, authority=authority)
@@ -47,7 +49,7 @@ class PaymentVerify(APIView):
                 payment.status = Payment.STATUS.SUCCESS
                 payment.save()
                 result = serializers.PaymentSerializer(payment)
-                return Response(result.data, status=status.HTTP_200_OK)
+                return Response(result.data)
             else:
                 payment.status = Payment.STATUS.FAILED
                 payment.save()
