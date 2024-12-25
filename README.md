@@ -6,11 +6,14 @@ A blog backend api with django and DRF (django rest framework). This project is 
 
 ## Features
 - Authentication with phone number and Otp code or email and password.
+- Use django signals for create subscription. 
+- Ability to define various plan for subscription.
+- Subscription payment with zarinpal gateway.
 - Ability to comment on articles.
 - Ability to add paid articles.
 - Profile for users and authors.
-- Ability to define variuos plan for subscription.
-- Subscription payment with zarinpal gateway.
+
+
 
 ## Technologies
 - Python
