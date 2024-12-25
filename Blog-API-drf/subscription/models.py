@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import  get_user_model
+from django.utils import timezone
 from payment.models import Payment
+
 
 User = get_user_model()
 
@@ -24,6 +26,21 @@ class Plan(models.Model):
     def __str__(self):
         return self.name
 
+    def expiration_time_calculate(self):
+        current_time = timezone.now()
+        if self.time_unit == self.TimeUnit.YEAR:
+            days = self.time_value * 365
+            return current_time + timezone.timedelta(days=days)
+        elif self.time_unit == self.TimeUnit.MONTH:
+            days = self.time_value * 30
+            return current_time + timezone.timedelta(days=days)
+        elif self.time_unit == self.TimeUnit.WEEK:
+            weeks = self.time_value
+            return current_time + timezone.timedelta(weeks=weeks)
+        else:
+            days = self.time_value
+            return current_time + timezone.timedelta(days=days)
+
 
 class Purchase(models.Model):
     class Status(models.IntegerChoices):
@@ -32,7 +49,7 @@ class Purchase(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='purchases')
     plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name='purchases')
-    payment = models.OneToOneField(Payment, on_delete=models.PROTECT, related_name='purchases')
+    payment = models.OneToOneField(Payment, on_delete=models.PROTECT, related_name='purchase')
     price = models.PositiveBigIntegerField()
     status = models.IntegerField(choices=Status.choices, default=Status.NOT_PAID)
     created_time = models.DateTimeField(auto_now_add=True)

@@ -15,6 +15,6 @@ def zpal_payment_request(merchant_id, amount, description, user_email, user_phon
 
 def zpal_payment_verify(merchant_id, authority, amount):
     client = Client(settings.ZARINPAL.get('request_url'))
-    result = client.service.Paymentverification(merchant_id, authority, amount)
+    result = client.service.PaymentVerification(merchant_id, authority, amount)
     is_paid = True if result.Status in (100, 101) else False
     return is_paid, result.RefID

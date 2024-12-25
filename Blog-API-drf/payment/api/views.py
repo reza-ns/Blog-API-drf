@@ -7,6 +7,8 @@ from django.conf import settings
 from payment.models import Payment
 from payment.utils import zarinpal
 from . import serializers
+from payment.signals import payment_success_signal
+
 
 
 class PaymentView(APIView):
@@ -48,6 +50,9 @@ class PaymentVerify(APIView):
                 payment.ref_id = ref_id
                 payment.status = Payment.STATUS.SUCCESS
                 payment.save()
+
+                payment_success_signal.send(sender=payment, payment=payment)
+
                 result = serializers.PaymentSerializer(payment)
                 return Response(result.data)
             else:
