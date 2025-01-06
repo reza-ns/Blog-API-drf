@@ -13,6 +13,7 @@ def create_subscription(sender, payment, **kwargs):
     payment.purchase.status = models.Purchase.Status.PAID
     subscription = models.Subscription.objects.create(
         purchase=payment.purchase,
+        user=payment.user,
         start_time=timezone.now(),
         end_time=models.Plan.expiration_time_calculate(payment.purchase.plan),
     )

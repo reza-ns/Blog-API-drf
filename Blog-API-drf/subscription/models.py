@@ -61,6 +61,7 @@ class Purchase(models.Model):
 
 class Subscription(models.Model):
     purchase = models.OneToOneField(Purchase, on_delete=models.PROTECT, related_name='subscriptions')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='subscriptions')
     created_time = models.DateTimeField(auto_now_add=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
