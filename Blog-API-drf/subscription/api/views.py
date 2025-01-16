@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-import uuid
 from subscription import models
 from . import serializers
 from payment.models import Payment
@@ -13,8 +12,8 @@ from payment.models import Payment
 class PurchaseCreate(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, format=None, *args, **kwargs):
-        plan = get_object_or_404(models.Plan, id=self.kwargs.get('plan_id'))
+    def get(self, request, format=None):
+        plan = get_object_or_404(models.Plan, id=request.query_params.get('plan_id'))
         if plan.is_enable:
             payment = Payment.objects.create(user=request.user, amount=plan.price)
             models.Purchase.objects.create(user=request.user, plan=plan,

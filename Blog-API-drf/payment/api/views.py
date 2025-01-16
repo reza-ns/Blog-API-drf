@@ -14,8 +14,8 @@ from payment.signals import payment_success_signal
 class PaymentView(APIView):
     permission_classes = (IsAuthenticated, IsPaymentOwner)
 
-    def get(self, request, format=None, *args, **kwargs):
-        payment = get_object_or_404(Payment, uid=self.kwargs.get('payment_uid'))
+    def get(self, request, format=None):
+        payment = get_object_or_404(Payment, uid=request.query_params.get('payment_uid'))
         self.check_object_permissions(request, payment)
         payment_link, authority = zarinpal.zpal_payment_request(
                                     merchant_id=settings.ZARINPAL['merchant_id'],
@@ -39,10 +39,10 @@ class PaymentVerify(APIView):
     permission_classes = (IsAuthenticated, IsPaymentOwner)
 
     def get(self, request, format=None):
-        authority = request.GET.get('Authority')
+        authority = request.query_params.get('Authority')
         payment = get_object_or_404(Payment, authority=authority)
         self.check_object_permissions(request, payment)
-        if request.GET.get('Status') == 'OK':
+        if request.query_params.get('Status') == 'OK':
             is_paid, ref_id = zarinpal.zpal_payment_verify(
                                     merchant_id=settings.ZARINPAL['merchant_id'],
                                     authority=payment.authority,
@@ -61,7 +61,7 @@ class PaymentVerify(APIView):
                 payment.status = Payment.STATUS.FAILED
                 payment.save()
                 return Response({'Payment failed'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        elif request.GET.get('Status') == 'NOK':
+        elif request.query_params.get('Status') == 'NOK':
             payment.status = Payment.STATUS.FAILED
             payment.save()
             return Response({'Payment failed'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
