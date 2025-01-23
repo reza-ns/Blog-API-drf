@@ -5,13 +5,21 @@ from accounts.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
+        fields = '__all__'
 
 
-class AuthSerializer(serializers.ModelSerializer):
+class RegisterOTPSendSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone_number', 'password')
+        fields = ('email', 'phone_number')
+
+
+class RegisterOTPVerifySerializer(serializers.ModelSerializer):
+    code = serializers.CharField(max_length=10)
+    request_id = serializers.UUIDField(format='hex_verbose')
+    class Meta:
+        model = User
+        fields = ('email', 'phone_number', 'code', 'request_id')
 
 
 class ObtainTokenSerializer(serializers.Serializer):

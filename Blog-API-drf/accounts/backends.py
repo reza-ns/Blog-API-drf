@@ -1,7 +1,7 @@
 from django.contrib.auth.backends import BaseBackend
 from django.db.models import Q
 from .models import User
-from .utils.OTP_send import email_otp_verify, sms_otp_verify
+from .utils.OTP import email_otp_verify, sms_otp_verify
 
 
 class UsernameOrEmailOrPhoneBackend(BaseBackend):
