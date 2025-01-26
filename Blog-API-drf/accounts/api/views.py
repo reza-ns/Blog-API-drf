@@ -73,10 +73,10 @@ class UserRegisterView(APIView):
                 # If yes compare given data with redis saved data and create user
                 # if no return error
                 if r.exists(email) == 1:
-                    request_id = r.hget(email, request_id)
+                    request_id = r.hget(email, str(request_id))
                     code = r.hget(email, code)
                     if request_id == request_id and code==code:
-                        user = User.objects.create_user(email)
+                        user = User.objects.create_user(email=email)
                         result = self.create_jwt_tokens(user)
                         return Response(result.data)
                 return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -86,10 +86,10 @@ class UserRegisterView(APIView):
                 # If yes ---> compare given data with redis saved data and create user
                 # if no ---> return error
                 if r.exists(phone_number) == 1:
-                    request_id = r.hget(phone_number, request_id)
+                    request_id = r.hget(phone_number, str(request_id))
                     code = r.hget(phone_number, code)
                     if request_id == request_id and code==code:
-                        user = User.objects.create_user(phone_number)
+                        user = User.objects.create_user(phone_number=phone_number)
                         result = self.create_jwt_tokens(user)
                         return Response(result.data)
                 return Response(status=status.HTTP_400_BAD_REQUEST)

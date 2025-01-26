@@ -1,11 +1,18 @@
 from django.contrib.auth.models import BaseUserManager
+import random
 
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email=None, phone_number=None, password=None):
         if email is None and phone_number is None:
             raise ValueError('User must have email or phone number')
-        user = self.model(email=self.normalize_email(email),phone_number=phone_number)
+
+        email = None if email is None else self.normalize_email(email)
+        user = self.model(
+            email=email,
+            phone_number=phone_number,
+            username=self._generate_username(email, phone_number)
+        )
         if password:
             user.set_password(password)
         user.save(using=self._db)
@@ -16,3 +23,12 @@ class CustomUserManager(BaseUserManager):
         user.role = self.model.ROLE_ADMIN
         user.save(using=self._db)
         return user
+
+    def _generate_username(self, email=None, phone_number=None):
+        if email:
+            name = email.split('@')[0]
+            username = f"{name}.{random.randint(1000, 9998)}"
+            return username
+        elif phone_number:
+            username = f"{phone_number}.{random.randint(1000, 9998)}"
+            return username
