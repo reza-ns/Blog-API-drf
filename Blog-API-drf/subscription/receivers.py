@@ -17,7 +17,7 @@ def create_subscription(sender, payment, **kwargs):
         start_time=timezone.now(),
         end_time=models.Plan.expiration_time_calculate(payment.purchase.plan),
     )
-    payment.user.role = User.ROLE_SUBSCRIBER
+    payment.user.role = User.UserRole.SUBSCRIBER
     subscription_expiration(subscription).apply_async(eta=subscription.end_time)
 
 

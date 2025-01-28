@@ -4,19 +4,14 @@ from .managers import CustomUserManager
 
 
 class User(AbstractBaseUser):
-    ROLE_AUTHOR = 'author'
-    ROLE_ADMIN = 'admin'
-    ROLE_SUBSCRIBER = 'subscriber'
-    ROLE_MEMBER = 'member'
+    class UserRole(models.TextChoices):
+        SUPERUSER = ('superuser', 'Superuser')
+        ADMIN = ('admin', 'Admin')
+        AUTHOR = ('author', 'Author')
+        SUBSCRIBER = ('subscriber', 'Subscriber')
+        MEMBER =  ('member', 'Member')
 
-    ROLE_CHOICES = (
-        (ROLE_AUTHOR, 'Author'),
-        (ROLE_ADMIN, 'Admin'),
-        (ROLE_SUBSCRIBER, 'Subscriber'),
-        (ROLE_MEMBER, 'Member'),
-    )
-
-    role = models.CharField(max_length=15, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    role = models.CharField(max_length=11, choices=UserRole.choices, default=UserRole.MEMBER)
     username = models.CharField(max_length=128, unique=True, blank=True)
     email = models.EmailField(unique=True, blank=True, null=True)
     phone_number = models.CharField(max_length=11, unique=True, blank=True, null=True)
@@ -40,7 +35,7 @@ class User(AbstractBaseUser):
 
     @property
     def is_staff(self):
-        if self.role == self.ROLE_ADMIN:
+        if self.role == self.UserRole.ADMIN or self.role == self.UserRole.SUPERUSER:
             return True
         return False
 

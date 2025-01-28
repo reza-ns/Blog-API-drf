@@ -8,26 +8,26 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
-        elif request.user and request.user.is_superuser:
+        elif request.user and request.user.role == User.UserRole.SUPERUSER:
             return True
-        return request.user.is_authenticated and request.user.role == User.ROLE_AUTHOR
+        return request.user.is_authenticated and request.user.role == User.UserRole.AUTHOR
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        elif request.user and request.user.is_superuser:
+        elif request.user and request.user.role == User.UserRole.SUPERUSER:
             return True
         return bool(obj.user == request.user)
 
 
 class IsSubscriberOrOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.user and request.user.is_superuser:
+        if request.user and request.user.role == User.UserRole.SUPERUSER:
             return True
         elif obj.is_paid:
-            if request.user.is_authenticated and request.user.role == User.ROLE_SUBSCRIBER:
+            if request.user.is_authenticated and request.user.role == User.UserRole.SUBSCRIBER:
                 return True
             elif obj.user == request.user:
                 return True

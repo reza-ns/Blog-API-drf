@@ -20,11 +20,12 @@ class CustomUserManager(BaseUserManager):
 
     def create_superuser(self, password, email=None, phone_number=None):
         user = self.create_user(email, phone_number, password)
-        user.role = self.model.ROLE_ADMIN
+        user.role = self.model.UserRole.SUPERUSER
         user.save(using=self._db)
         return user
 
-    def _generate_username(self, email=None, phone_number=None):
+    @staticmethod
+    def _generate_username(email=None, phone_number=None):
         if email:
             name = email.split('@')[0]
             username = f"{name}.{random.randint(1000, 9998)}"

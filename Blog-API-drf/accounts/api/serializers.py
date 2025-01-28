@@ -5,13 +5,12 @@ from accounts.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('username', 'email', 'phone_number', 'date_joined')
 
 
-class RegisterOTPSendSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('email', 'phone_number')
+class RegisterOTPSendSerializer(serializers.Serializer):
+    email = serializers.EmailField(default=None)
+    phone_number = serializers.CharField(max_length=11, default=None)
 
 
 class RegisterOTPVerifySerializer(serializers.ModelSerializer):
@@ -20,6 +19,18 @@ class RegisterOTPVerifySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'phone_number', 'code', 'request_id')
+
+
+class LoginOTPSendSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=128, default=None)
+    email = serializers.EmailField(default=None)
+    phone_number = serializers.CharField(max_length=11, default=None)
+
+
+class LoginOTPVerifySerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=10, required=False)
+    request_id = serializers.UUIDField(format='hex_verbose')
+    password = serializers.CharField(max_length=128, default=None)
 
 
 class ObtainTokenSerializer(serializers.Serializer):

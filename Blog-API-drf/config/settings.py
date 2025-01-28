@@ -139,7 +139,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'accounts.User'
-AUTHENTICATION_BACKENDS = ['accounts.backends.UsernameOrEmailOrPhoneBackend']
+AUTHENTICATION_BACKENDS = ['accounts.backends.UsernameOrEmailBackend']
 
 
 MEDIA_URL = 'media/'

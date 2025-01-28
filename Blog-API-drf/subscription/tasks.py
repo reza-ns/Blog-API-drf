@@ -7,4 +7,4 @@ User = get_user_model()
 @shared_task()
 def subscription_expiration(subscription):
     subscription.is_active = False
-    subscription.user.role = User.ROLE_MEMBER
+    subscription.user.role = User.UserRole.MEMBER

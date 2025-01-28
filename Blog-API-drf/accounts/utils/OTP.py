@@ -1,5 +1,5 @@
-# Send OTP code by email or sms and save it in redis.
-# Verify given code by compare it with code that saved in redis.
+import random
+
 
 def sms_otp_send(phone_number):
     """
@@ -7,7 +7,8 @@ def sms_otp_send(phone_number):
     :param phone_number: user phone number
     :return: generated otp code
     """
-    return 12345
+    code = random.randint(1000, 9998)
+    return str(code)
 
 def sms_otp_verify(phone_number, code):
     """
@@ -24,7 +25,8 @@ def email_otp_send(email):
     :param email: user email
     :return: generated otp code
     """
-    return 54321
+    code = random.randint(1000, 9998)
+    return str(code)
 
 def email_otp_verify(email, code):
     """
@@ -35,5 +37,3 @@ def email_otp_verify(email, code):
     """
     ...
 
-def generate_otp_code():
-    ...
