@@ -175,4 +175,5 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_DB = os.getenv('REDIS_DB')
+REDIS_EXPIRE_TIME = 60
 

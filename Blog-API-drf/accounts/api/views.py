@@ -5,9 +5,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.conf import settings
 import uuid
-import redis
 from accounts.models import User
-from accounts.utils import OTP, JWT
+from accounts.utils import OTP, JWT, Redis
 from . import serializers
 from . import permissions
 
@@ -21,6 +20,7 @@ class UserView(RetrieveAPIView):
 
 class UserRegisterView(APIView):
     permission_classes = (AllowAny,)
+    expire_time = settings.REDIS_EXPIRE_TIME
 
     def get(self, request, format=None):
         """
@@ -33,8 +33,6 @@ class UserRegisterView(APIView):
             data = serializer.validated_data
             email = data.get('email')
             phone_number = data.get('phone_number')
-            r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB,
-                            charset="utf-8", decode_responses=True)
 
             if email:
                 if User.objects.filter(email=email).exists():
@@ -43,8 +41,8 @@ class UserRegisterView(APIView):
                 otp_code = OTP.email_otp_send(email)
                 request_id = uuid.uuid4()
                 anonymous_user_data = {'email': email, 'code': otp_code}
-                r.hset(name=str(request_id), mapping=anonymous_user_data)
-                r.expire(name=str(request_id), time=120, nx=True)
+                Redis.redis_save(name=str(request_id), dic=anonymous_user_data,
+                                 expire_time=self.expire_time)
                 return Response({'request_id': request_id})
 
             elif phone_number:
@@ -54,8 +52,8 @@ class UserRegisterView(APIView):
                 otp_code = OTP.sms_otp_send(phone_number)
                 request_id = uuid.uuid4()
                 anonymous_user_data = {'phone_number': phone_number, 'code': otp_code}
-                r.hset(name=str(request_id), mapping=anonymous_user_data)
-                r.expire(name=str(request_id), time=120, nx=True)
+                Redis.redis_save(name=str(request_id), dic=anonymous_user_data,
+                                 expire_time=self.expire_time)
                 return Response({'request_id': request_id})
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
@@ -71,18 +69,17 @@ class UserRegisterView(APIView):
             otp_code = data.get('code')
             request_id = str(data.get('request_id'))
 
-            r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB,
-                            charset="utf-8", decode_responses=True)
-            if r.exists(request_id) == 1:
-                code = r.hget(request_id, 'code')
-                if otp_code == code:
-                    if r.hexists(name=request_id, key='email'):
-                        email = r.hget(request_id, 'email')
+            expire_status, user_data= Redis.redis_get(name=request_id)
+            if expire_status:
+                code = user_data.get('code')
+                if code == otp_code:
+                    if 'email' in user_data:
+                        email = user_data.get('email')
                         user = User.objects.create_user(email=email)
                         result = JWT.create_jwt_tokens(user)
                         return Response(result.data)
-                    elif r.hexists(name=request_id, key='phone_number'):
-                        phone_number = r.hget(request_id, 'phone_number')
+                    elif 'phone_number' in user_data:
+                        phone_number = user_data.get('phone_number')
                         user = User.objects.create_user(phone_number=phone_number)
                         result = JWT.create_jwt_tokens(user)
                         return Response(result.data)
@@ -92,6 +89,7 @@ class UserRegisterView(APIView):
 
 class UserLoginView(APIView):
     permission_classes = (AllowAny,)
+    expire_time = settings.REDIS_EXPIRE_TIME
 
     def get(self, request, format=None):
         serializer = serializers.LoginOTPSendSerializer(data=request.query_params)
@@ -100,15 +98,15 @@ class UserLoginView(APIView):
             username = data.get('username')
             email = data.get('email')
             phone_number = data.get('phone_number')
-            r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB,
-                            charset="utf-8", decode_responses=True)
+
             request_id = uuid.uuid4()
             if username:
                 if not User.objects.filter(username=username).exists():
                     return Response({"User with this username does not exist"},
                                     status=status.HTTP_404_NOT_FOUND)
-                r.hset(name=str(request_id), key='username', value=username)
-                r.expire(name=str(request_id), time=3600, nx=True)
+                anonymous_user_data = {'username': username}
+                Redis.redis_save(name=str(request_id), dic=anonymous_user_data,
+                                 expire_time=3600)
                 return Response({'request_id': request_id})
 
             elif email:
@@ -117,8 +115,8 @@ class UserLoginView(APIView):
                                     status=status.HTTP_404_NOT_FOUND)
                 otp_code = OTP.email_otp_send(email)
                 anonymous_user_data = {'email': email, 'code': otp_code}
-                r.hset(name=str(request_id), mapping=anonymous_user_data)
-                r.expire(name=str(request_id), time=120, nx=True)
+                Redis.redis_save(name=str(request_id), dic=anonymous_user_data,
+                                 expire_time=self.expire_time)
                 return Response({'request_id': request_id})
 
             elif phone_number:
@@ -127,8 +125,8 @@ class UserLoginView(APIView):
                                     status=status.HTTP_404_NOT_FOUND)
                 otp_code = OTP.sms_otp_send(phone_number)
                 anonymous_user_data = {'phone_number': phone_number, 'code': otp_code}
-                r.hset(name=str(request_id), mapping=anonymous_user_data)
-                r.expire(name=str(request_id), time=120, nx=True)
+                Redis.redis_save(name=str(request_id), dic=anonymous_user_data,
+                                 expire_time=self.expire_time)
                 return Response({'request_id': request_id})
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
@@ -140,27 +138,24 @@ class UserLoginView(APIView):
             request_id = str(data.get('request_id'))
             password = data.get('password')
 
-            r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB,
-                            charset="utf-8", decode_responses=True)
-            if r.exists(request_id) == 1:
-                code = r.hget(request_id, 'code')
-                if otp_code == code:
-                    if r.hexists(name=request_id, key='username') and password:
-                        username = r.hget(request_id, 'username')
+            expire_status, user_data = Redis.redis_get(name=request_id)
+            if expire_status:
+                code = user_data.get('code')
+                if code == otp_code:
+                    if 'username' in user_data and password:
+                        username = user_data.get('username')
                         user = User.objects.get(username=username)
                         if user.check_password(password):
                             result = JWT.create_jwt_tokens(user)
                             return Response(result.data)
                         return Response({"Password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
-
-                    elif r.hexists(name=request_id, key='email'):
-                        email = r.hget(request_id, 'email')
+                    elif 'email' in user_data:
+                        email = user_data.get('email')
                         user = User.objects.get(email=email)
                         result = JWT.create_jwt_tokens(user)
                         return Response(result.data)
-
-                    elif r.hexists(name=request_id, key='phone_number'):
-                        phone_number = r.hget(request_id, 'phone_number')
+                    elif 'phone_number' in user_data:
+                        phone_number = user_data.get('phone_number')
                         user = User.objects.get(phone_number=phone_number)
                         result = JWT.create_jwt_tokens(user)
                         return Response(result.data)
