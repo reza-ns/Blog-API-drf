@@ -1,16 +1,10 @@
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from django.utils.text import slugify
 from django.shortcuts import get_object_or_404
 from blog import models
 from . import serializers
 from . import permissions
-
-
-def make_slug(data):
-    title = data.get('title')
-    return slugify(title, allow_unicode=True)
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
@@ -35,7 +29,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
             return serializers.ArticleMakeUpdateSerializer
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, slug=make_slug(self.request.data))
+        serializer.save(user=self.request.user)
 
 
 class CategoryView(generics.ListAPIView):

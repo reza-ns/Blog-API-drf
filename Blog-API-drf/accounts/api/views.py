@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.conf import settings
+from django.contrib.auth import authenticate
 import uuid
 from accounts.models import User
 from accounts.utils import OTP, JWT, Redis
@@ -134,31 +135,16 @@ class UserLoginView(APIView):
         serializer = serializers.LoginOTPVerifySerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
-            otp_code = data.get('code')
             request_id = str(data.get('request_id'))
+            otp_code = data.get('code')
             password = data.get('password')
 
-            expire_status, user_data = Redis.redis_get(name=request_id)
-            if expire_status:
-                code = user_data.get('code')
-                if code == otp_code:
-                    if 'username' in user_data and password:
-                        username = user_data.get('username')
-                        user = User.objects.get(username=username)
-                        if user.check_password(password):
-                            result = JWT.create_jwt_tokens(user)
-                            return Response(result.data)
-                        return Response({"Password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
-                    elif 'email' in user_data:
-                        email = user_data.get('email')
-                        user = User.objects.get(email=email)
-                        result = JWT.create_jwt_tokens(user)
-                        return Response(result.data)
-                    elif 'phone_number' in user_data:
-                        phone_number = user_data.get('phone_number')
-                        user = User.objects.get(phone_number=phone_number)
-                        result = JWT.create_jwt_tokens(user)
-                        return Response(result.data)
-                return Response({"Code is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+            user = authenticate(request_id=request_id, otp=otp_code, password=password)
+            if user is not None:
+                result = JWT.create_jwt_tokens(user)
+                return Response(result.data)
+            return Response({"Invalid code or password"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+
+
 

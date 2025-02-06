@@ -8,6 +8,7 @@ def sms_otp_send(phone_number):
     :return: generated otp code
     """
     code = random.randint(1000, 9998)
+    print(code)
     return str(code)
 
 def email_otp_send(email):
@@ -17,5 +18,6 @@ def email_otp_send(email):
     :return: generated otp code
     """
     code = random.randint(1000, 9998)
+    print(code)
     return str(code)
 

@@ -1,5 +1,6 @@
-from django.db import models
+from django.db import models, IntegrityError
 from django.contrib.auth import get_user_model
+from .managers import MakeSlugManager
 
 User = get_user_model()
 
@@ -9,6 +10,8 @@ class Category(models.Model):
     slug = models.SlugField(max_length=80, unique=True, allow_unicode=True)
     parent = models.ForeignKey('Category', on_delete=models.PROTECT,
                                null=True, blank=True, related_name='subcategories')
+
+    objects = MakeSlugManager()
 
     class Meta:
         verbose_name_plural = 'Categories'
@@ -38,6 +41,8 @@ class Article(models.Model):
     tags = models.ManyToManyField('Tag', related_name='articles')
     thumbnail = models.ImageField(upload_to='articles/%Y/%m/%d', null=True, blank=True)
 
+    objects = MakeSlugManager()
+
     def __str__(self):
         return self.title
 
@@ -59,6 +64,8 @@ class Tag(models.Model):
     name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=50, unique=True, allow_unicode=True)
     user = models.ForeignKey(User, blank=True, on_delete=models.PROTECT, related_name='tags')
+
+    objects = MakeSlugManager()
 
     def __str__(self):
         return self.name

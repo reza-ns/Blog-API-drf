@@ -19,8 +19,8 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["phone_number"]
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email", "phone_number"]
 
     objects = CustomUserManager()
 
