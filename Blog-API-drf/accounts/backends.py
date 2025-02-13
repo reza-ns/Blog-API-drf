@@ -4,20 +4,10 @@ from .utils import Redis
 from .models import User
 
 
-class UsernameOrEmailBackend(BaseBackend):
+class OTPBackend(BaseBackend):
     def authenticate(self, request, request_id=None, otp=None, password=None, **kwargs):
         if request_id is None and otp is None and password is None:
             return None
-
-        username = kwargs.get('username')
-        if username and password:
-            try:
-                user = User.objects.get(username=username)
-                if user.check_password(password) and self.user_can_authenticate(user):
-                    return user
-                return None
-            except User.DoesNotExist:
-                return None
 
         expire_status, user_data = Redis.redis_get(name=request_id)
         if expire_status:

@@ -5,7 +5,7 @@ from .api import views
 app_name = 'blog'
 
 router = routers.SimpleRouter()
-router.register(r'articles', views.ArticleViewSet)
+router.register(r'articles', views.ArticleViewSet, basename='article')
 
 
 urlpatterns = [

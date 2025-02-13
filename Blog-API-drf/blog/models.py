@@ -39,9 +39,9 @@ class Article(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     modify_date = models.DateTimeField(auto_now=True)
     is_paid = models.BooleanField(default=False)
-    category = models.ManyToManyField('Category', related_name='articles')
+    category = models.ManyToManyField('Category', blank=True ,related_name='articles')
     user = models.ForeignKey(User, blank=True, on_delete=models.PROTECT, related_name='articles')
-    tags = models.ManyToManyField('Tag', related_name='articles')
+    tags = models.ManyToManyField('Tag', blank=True, related_name='articles')
     thumbnail = models.ImageField(upload_to='articles/%Y/%m/%d', null=True, blank=True)
 
     def save(self, *args, **kwargs):

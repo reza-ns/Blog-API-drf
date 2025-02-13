@@ -8,3 +8,4 @@ User = get_user_model()
 def subscription_expiration(subscription):
     subscription.is_active = False
     subscription.user.role = User.UserRole.MEMBER
+    subscription.save()
