@@ -1,3 +1,5 @@
+from unicodedata import category
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITestCase
@@ -72,4 +74,62 @@ class TestArticleViewSet(APITestCase):
         res = self.client.post(url, data)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
+
+class TestCategoryView(APITestCase):
+    """
+    Things to test:
+    - test url work correctly
+    - test that view response has correct value count
+    """
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(email='example@mail.com')
+        cls.category = models.Category.objects.create(name='cat one')
+        cls.url = reverse('blog:category', args=[cls.category.slug])
+        for i in range(10):
+            cls.article = models.Article.objects.create(
+                title=f"article{i}",
+                content="sample content",
+                user=cls.user,
+                status=models.Article.STATUS_PUBLISH,
+            )
+            cls.article.category.add(cls.category)
+
+
+    def test_category_url(self):
+        res = self.client.get(self.url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_category_articles_count(self):
+        res = self.client.get(self.url)
+        self.assertEqual(res.json()['count'], 10)
+
+
+class TestCommentView(APITestCase):
+    """
+    Things to test:
+    - test comment create url
+    - test not authenticated user can't create comment
+    """
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(email='example@mail.com')
+        cls.article = models.Article.objects.create(
+            title='article one',
+            content='article one content',
+            user=cls.user,
+            status=models.Article.STATUS_PUBLISH
+        )
+        cls.url = reverse('blog:comment', args=[cls.article.slug])
+
+    def test_comment_create(self):
+        data = {'body':'sample comment','user':self.user, 'article':self.article}
+        self.client.force_authenticate(user=self.user)
+        res = self.client.post(self.url, data=data)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_comment_create_permission(self):
+        data = {'body': 'sample comment', 'user': self.user, 'article': self.article}
+        res = self.client.post(self.url, data=data)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
