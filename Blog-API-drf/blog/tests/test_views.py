@@ -18,6 +18,9 @@ class TestArticleViewSet(APITestCase):
     - test that paid article not show for regular user
     - test create article with required fields
     - test not create article when non author user send request
+    - test that can update article
+    - test that can partial update article
+    - test that can delete article
     """
     @classmethod
     def setUpTestData(cls):
@@ -53,26 +56,55 @@ class TestArticleViewSet(APITestCase):
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_create_article(self):
+    def test_article_create(self):
         url = reverse('blog:article-list')
         data = {
             'title': 'article test',
-            'content': 'article test content',
+            'content': 'article test content'
         }
         self.user.role = User.UserRole.AUTHOR
         self.client.force_authenticate(user=self.user)
-        res = self.client.post(url, data)
+        res = self.client.post(url, data, format='json')
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
-    def test_create_article_permission(self):
+    def test_article_create_permission(self):
         url = reverse('blog:article-list')
         data = {
             'title': 'article test',
-            'content': 'article test content',
+            'content': 'article test content'
         }
         self.client.force_authenticate(user=self.user)
-        res = self.client.post(url, data)
+        res = self.client.post(url, data, format='json')
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_article_update(self):
+        url = reverse('blog:article-detail', args=[self.article.slug])
+        put_data = {'title': 'new title', 'content': 'new content'}
+        self.user.role = User.UserRole.AUTHOR
+        self.client.force_authenticate(user=self.user)
+        res = self.client.put(url, put_data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        updated_article = models.Article.objects.get(pk=self.article.id)
+        self.assertEqual(updated_article.title, 'new title')
+        self.assertEqual(updated_article.content, 'new content')
+
+    def test_article_partial_update(self):
+        url = reverse('blog:article-detail', args=[self.article.slug])
+        patch_data = {'content': 'new content'}
+        self.user.role = User.UserRole.AUTHOR
+        self.client.force_authenticate(user=self.user)
+        res = self.client.patch(url, patch_data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        updated_article = models.Article.objects.get(pk=self.article.id)
+        self.assertEqual(updated_article.title, self.article.title)
+        self.assertEqual(updated_article.content, 'new content')
+
+    def test_article_delete(self):
+        url = reverse('blog:article-detail', args=[self.article.slug])
+        self.user.role = User.UserRole.AUTHOR
+        self.client.force_authenticate(user=self.user)
+        res = self.client.delete(url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class TestCategoryView(APITestCase):
@@ -123,13 +155,13 @@ class TestCommentView(APITestCase):
         cls.url = reverse('blog:comment', args=[cls.article.slug])
 
     def test_comment_create(self):
-        data = {'body':'sample comment','user':self.user, 'article':self.article}
+        data = {'body':'sample comment'}
         self.client.force_authenticate(user=self.user)
-        res = self.client.post(self.url, data=data)
+        res = self.client.post(self.url, data=data, format='json')
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     def test_comment_create_permission(self):
-        data = {'body': 'sample comment', 'user': self.user, 'article': self.article}
-        res = self.client.post(self.url, data=data)
+        data = {'body': 'sample comment'}
+        res = self.client.post(self.url, data=data, format='json')
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
