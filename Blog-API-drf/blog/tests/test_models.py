@@ -69,8 +69,8 @@ class TestArticleModel(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user(email = 'example@mail.com')
-        cls.category = models.Category.objects.create(name='cat one', slug='cat-one')
-        cls.tag = models.Tag.objects.create(name='tag one', slug='tag-one', user=cls.user)
+        cls.category = models.Category.objects.create(name='cat one')
+        cls.tag = models.Tag.objects.create(name='tag one', user=cls.user)
         cls.article = models.Article.objects.create(
             title='article one',
             content='article one content',

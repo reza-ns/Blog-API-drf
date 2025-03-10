@@ -47,7 +47,6 @@ class ArticleListSerializer(serializers.ModelSerializer):
 
 
 class ArticleMakeUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Article
         fields = (

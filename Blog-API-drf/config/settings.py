@@ -149,15 +149,24 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/0',
+    },
+}
+
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 2
+    'PAGE_SIZE': 10
 }
 
 
@@ -170,13 +179,13 @@ ZARINPAL = {
 
 
 # Celery configs
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
 
 
-# Redis config
-REDIS_HOST = os.getenv('REDIS_HOST')
-REDIS_PORT = os.getenv('REDIS_PORT')
-REDIS_DB = os.getenv('REDIS_DB')
+# Redis config for OTP
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 2
 REDIS_EXPIRE_TIME = 60
 

@@ -70,6 +70,9 @@ class UserRegisterView(APIView):
             otp_code = data.get('code')
             request_id = str(data.get('request_id'))
 
+            print(otp_code)
+            print(request_id)
+
             expire_status, user_data= Redis.redis_get(name=request_id)
             if expire_status:
                 code = user_data.get('code')
