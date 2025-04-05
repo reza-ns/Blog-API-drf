@@ -1,7 +1,8 @@
 
 # Blog API with django rest framework
 
-A blog backend api with django and DRF (django rest framework). This project is inspired by the Medium.com and allow users to add paid articles. 
+A blog backend api with django and DRF (django rest framework). This project is inspired by the Medium.com and allow users to add paid articles.
+This project is inspired by Medium.com and allows users to add free and paid articles.
 
 
 ## Features
